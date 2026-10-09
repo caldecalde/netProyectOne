@@ -1,0 +1,33 @@
+﻿<Project>
+  <ItemGroup Label="AWS">
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.104.1" />
+    <PackageVersion Include="AWSSDK.SimpleNotificationService" Version="4.0.100.16" />
+    <PackageVersion Include="AWSSDK.SQS" Version="4.0.100.15" />
+  </ItemGroup>
+  <ItemGroup Label="Data">
+    <PackageVersion Include="MongoDB.Driver" Version="3.12.0" />
+  </ItemGroup>
+  <ItemGroup Label="Web">
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.25" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+  </ItemGroup>
+  <ItemGroup Label="Observability">
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.3" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.19.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.19.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AWS" Version="1.19.1" />
+  </ItemGroup>
+  <ItemGroup Label="Testing">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
+    <PackageVersion Include="Moq" Version="4.21.0" />
+    <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.25" />
+    <PackageVersion Include="Testcontainers.LocalStack" Version="4.15.0" />
+    <PackageVersion Include="Testcontainers.MongoDb" Version="4.15.0" />
+  </ItemGroup>
+</Project>

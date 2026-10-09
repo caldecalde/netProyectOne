@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\CareFlow.Ingestion.Application\CareFlow.Ingestion.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" />
+    <PackageReference Include="MongoDB.Driver" />
+  </ItemGroup>
+
+</Project>

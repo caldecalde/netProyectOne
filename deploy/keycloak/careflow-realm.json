@@ -1,0 +1,90 @@
+{
+  "realm": "careflow",
+  "displayName": "CareFlow (local demo)",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 900,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      { "name": "submitter", "description": "Can submit HL7/X12 files and read results." },
+      { "name": "viewer", "description": "Read-only access to processed data." },
+      { "name": "auditor", "description": "Read access plus the audit trail." }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "careflow-cli",
+      "name": "CareFlow CLI / Postman (dev only)",
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "careflow-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "careflow-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "careflow-web",
+      "name": "CareFlow Web UI",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:5173/*", "https://localhost:7173/*"],
+      "webOrigins": ["+"],
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "protocolMappers": [
+        {
+          "name": "careflow-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "careflow-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "submitter",
+      "enabled": true,
+      "email": "submitter@careflow.local",
+      "emailVerified": true,
+      "firstName": "Sam",
+      "lastName": "Submitter",
+      "credentials": [{ "type": "password", "value": "submitter", "temporary": false }],
+      "realmRoles": ["submitter"]
+    },
+    {
+      "username": "viewer",
+      "enabled": true,
+      "email": "viewer@careflow.local",
+      "emailVerified": true,
+      "firstName": "Val",
+      "lastName": "Viewer",
+      "credentials": [{ "type": "password", "value": "viewer", "temporary": false }],
+      "realmRoles": ["viewer"]
+    },
+    {
+      "username": "auditor",
+      "enabled": true,
+      "email": "auditor@careflow.local",
+      "emailVerified": true,
+      "firstName": "Alex",
+      "lastName": "Auditor",
+      "credentials": [{ "type": "password", "value": "auditor", "temporary": false }],
+      "realmRoles": ["auditor"]
+    }
+  ]
+}

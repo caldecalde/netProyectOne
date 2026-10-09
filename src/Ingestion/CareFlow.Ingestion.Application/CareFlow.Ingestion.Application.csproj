@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\CareFlow.Ingestion.Domain\CareFlow.Ingestion.Domain.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\CareFlow.BuildingBlocks\CareFlow.BuildingBlocks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CareFlow.Ingestion.UnitTests" />
+  </ItemGroup>
+
+</Project>

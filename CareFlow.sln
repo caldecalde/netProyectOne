@@ -1,0 +1,84 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EAAD513B-5CF4-4FF1-8D29-F8425BF9B8AC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{F1FD81D3-3EB9-4405-9397-D8AF66B80A10}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CareFlow.BuildingBlocks", "src\BuildingBlocks\CareFlow.BuildingBlocks\CareFlow.BuildingBlocks.csproj", "{FCF9E3DE-6F3E-4508-99AF-7A7936284F33}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ingestion", "Ingestion", "{AE83DB86-5401-43CA-8E53-802A94B18C5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CareFlow.Ingestion.Api", "src\Ingestion\CareFlow.Ingestion.Api\CareFlow.Ingestion.Api.csproj", "{F14116C8-5D47-450B-9909-0D875B1A1351}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CareFlow.Ingestion.Application", "src\Ingestion\CareFlow.Ingestion.Application\CareFlow.Ingestion.Application.csproj", "{4CDA9E35-6CA7-4D6F-9551-A4C5A1EC1053}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CareFlow.Ingestion.Domain", "src\Ingestion\CareFlow.Ingestion.Domain\CareFlow.Ingestion.Domain.csproj", "{97C469BB-E4EE-40C9-A4E0-DDB0C2D61FB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CareFlow.Ingestion.Infrastructure", "src\Ingestion\CareFlow.Ingestion.Infrastructure\CareFlow.Ingestion.Infrastructure.csproj", "{625AA879-23F8-4590-A1C0-E408ABDC8FF0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F00F83E2-973E-4B2E-BD28-24FE6BFA1DCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CareFlow.Architecture.Tests", "tests\CareFlow.Architecture.Tests\CareFlow.Architecture.Tests.csproj", "{2C2F6320-DC5D-49B0-BA70-42EABE9663D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CareFlow.Ingestion.UnitTests", "tests\CareFlow.Ingestion.UnitTests\CareFlow.Ingestion.UnitTests.csproj", "{08904090-124D-4F06-9925-5D26485F6682}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CareFlow.Ingestion.IntegrationTests", "tests\CareFlow.Ingestion.IntegrationTests\CareFlow.Ingestion.IntegrationTests.csproj", "{7886B628-7034-40FC-B2D0-C561532DFBE4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FCF9E3DE-6F3E-4508-99AF-7A7936284F33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCF9E3DE-6F3E-4508-99AF-7A7936284F33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCF9E3DE-6F3E-4508-99AF-7A7936284F33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCF9E3DE-6F3E-4508-99AF-7A7936284F33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F14116C8-5D47-450B-9909-0D875B1A1351}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F14116C8-5D47-450B-9909-0D875B1A1351}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F14116C8-5D47-450B-9909-0D875B1A1351}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F14116C8-5D47-450B-9909-0D875B1A1351}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CDA9E35-6CA7-4D6F-9551-A4C5A1EC1053}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CDA9E35-6CA7-4D6F-9551-A4C5A1EC1053}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CDA9E35-6CA7-4D6F-9551-A4C5A1EC1053}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CDA9E35-6CA7-4D6F-9551-A4C5A1EC1053}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97C469BB-E4EE-40C9-A4E0-DDB0C2D61FB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97C469BB-E4EE-40C9-A4E0-DDB0C2D61FB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97C469BB-E4EE-40C9-A4E0-DDB0C2D61FB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97C469BB-E4EE-40C9-A4E0-DDB0C2D61FB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{625AA879-23F8-4590-A1C0-E408ABDC8FF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{625AA879-23F8-4590-A1C0-E408ABDC8FF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{625AA879-23F8-4590-A1C0-E408ABDC8FF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{625AA879-23F8-4590-A1C0-E408ABDC8FF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C2F6320-DC5D-49B0-BA70-42EABE9663D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C2F6320-DC5D-49B0-BA70-42EABE9663D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C2F6320-DC5D-49B0-BA70-42EABE9663D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C2F6320-DC5D-49B0-BA70-42EABE9663D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08904090-124D-4F06-9925-5D26485F6682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08904090-124D-4F06-9925-5D26485F6682}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08904090-124D-4F06-9925-5D26485F6682}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08904090-124D-4F06-9925-5D26485F6682}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7886B628-7034-40FC-B2D0-C561532DFBE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7886B628-7034-40FC-B2D0-C561532DFBE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7886B628-7034-40FC-B2D0-C561532DFBE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7886B628-7034-40FC-B2D0-C561532DFBE4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F1FD81D3-3EB9-4405-9397-D8AF66B80A10} = {EAAD513B-5CF4-4FF1-8D29-F8425BF9B8AC}
+		{FCF9E3DE-6F3E-4508-99AF-7A7936284F33} = {F1FD81D3-3EB9-4405-9397-D8AF66B80A10}
+		{AE83DB86-5401-43CA-8E53-802A94B18C5F} = {EAAD513B-5CF4-4FF1-8D29-F8425BF9B8AC}
+		{F14116C8-5D47-450B-9909-0D875B1A1351} = {AE83DB86-5401-43CA-8E53-802A94B18C5F}
+		{4CDA9E35-6CA7-4D6F-9551-A4C5A1EC1053} = {AE83DB86-5401-43CA-8E53-802A94B18C5F}
+		{97C469BB-E4EE-40C9-A4E0-DDB0C2D61FB2} = {AE83DB86-5401-43CA-8E53-802A94B18C5F}
+		{625AA879-23F8-4590-A1C0-E408ABDC8FF0} = {AE83DB86-5401-43CA-8E53-802A94B18C5F}
+		{2C2F6320-DC5D-49B0-BA70-42EABE9663D3} = {F00F83E2-973E-4B2E-BD28-24FE6BFA1DCB}
+		{08904090-124D-4F06-9925-5D26485F6682} = {F00F83E2-973E-4B2E-BD28-24FE6BFA1DCB}
+		{7886B628-7034-40FC-B2D0-C561532DFBE4} = {F00F83E2-973E-4B2E-BD28-24FE6BFA1DCB}
+	EndGlobalSection
+EndGlobal
