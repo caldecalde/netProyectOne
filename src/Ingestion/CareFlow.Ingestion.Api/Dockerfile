@@ -7,6 +7,7 @@ WORKDIR /src
 # Restore in its own layer so it is cached until a project or package version changes.
 COPY global.json Directory.Build.props Directory.Packages.props .editorconfig ./
 COPY src/BuildingBlocks/CareFlow.BuildingBlocks/CareFlow.BuildingBlocks.csproj src/BuildingBlocks/CareFlow.BuildingBlocks/
+COPY src/BuildingBlocks/CareFlow.BuildingBlocks.Aws/CareFlow.BuildingBlocks.Aws.csproj src/BuildingBlocks/CareFlow.BuildingBlocks.Aws/
 COPY src/Ingestion/CareFlow.Ingestion.Domain/CareFlow.Ingestion.Domain.csproj src/Ingestion/CareFlow.Ingestion.Domain/
 COPY src/Ingestion/CareFlow.Ingestion.Application/CareFlow.Ingestion.Application.csproj src/Ingestion/CareFlow.Ingestion.Application/
 COPY src/Ingestion/CareFlow.Ingestion.Infrastructure/CareFlow.Ingestion.Infrastructure.csproj src/Ingestion/CareFlow.Ingestion.Infrastructure/

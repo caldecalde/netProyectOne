@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\CareFlow.Parser.Application\CareFlow.Parser.Application.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\CareFlow.BuildingBlocks.Aws\CareFlow.BuildingBlocks.Aws.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="nHapi.Model.V251" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CareFlow.Parser.UnitTests" />
+    <InternalsVisibleTo Include="CareFlow.Parser.IntegrationTests" />
+  </ItemGroup>
+
+</Project>

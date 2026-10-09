@@ -12,8 +12,8 @@ Services must react to each other's events without the producer knowing who cons
 - The OpenTelemetry AWS instrumentation injects `traceparent` into message attributes, so one trace spans HTTP → S3 → SNS → SQS → consumer.
 - Consumers must be **idempotent**: delivery is at-least-once. Every event carries an `EventId` for de-duplication.
 
-## Known gap (scheduled for Week 2)
-Ingestion currently writes MongoDB and then publishes to SNS. If SNS is unavailable between those two steps, the file is stored but no event is sent. A **transactional outbox** will close this gap: the event is written in the same MongoDB transaction and relayed by a background publisher.
+## Delivery guarantees
+In Week 1, Ingestion wrote MongoDB and then published to SNS, so an SNS outage between the two steps could leave a stored file without its event. That gap is closed by a **transactional outbox**, and consumers are idempotent and dead-letter what they cannot process. See [ADR 0005](0005-transactional-outbox-and-reliable-consumers.md).
 
 ## Alternatives considered
 - **EventBridge:** richer routing, but more than this system needs, and weaker LocalStack parity.

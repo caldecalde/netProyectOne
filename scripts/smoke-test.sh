@@ -26,7 +26,17 @@ VIEWER=$(token viewer)
 ready=$(curl -s -o /dev/null -w '%{http_code}' "$API_URL/health/ready")
 check "readiness probe" "$([ "$ready" = 200 ] && echo true || echo false)"
 
-for sample in samples/hl7/adt-a01.hl7 samples/x12/837p-single-claim.x12; do
+wait_for_terminal_status() {
+  local id=$1 status=Received
+  for _ in $(seq 1 30); do
+    status=$(curl -s -H "Authorization: Bearer $VIEWER" "$API_URL/api/v1/files/$1" | json_field status)
+    [ "$status" != "Received" ] && break
+    sleep 1
+  done
+  echo "$status"
+}
+
+for sample in samples/hl7/adt-a01.hl7 samples/hl7/oru-r01.hl7 samples/hl7/adt-batch.hl7 samples/x12/837p-single-claim.x12 samples/x12/837p-batch-partial.x12; do
   response=$(curl -s -w '\n%{http_code}' -H "Authorization: Bearer $SUBMITTER" -F "file=@$ROOT/$sample" "$API_URL/api/v1/files")
   status=$(echo "$response" | tail -n1)
   body=$(echo "$response" | sed '$d')
@@ -34,6 +44,13 @@ for sample in samples/hl7/adt-a01.hl7 samples/x12/837p-single-claim.x12; do
   id=$(echo "$body" | json_field id)
   read_status=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $VIEWER" "$API_URL/api/v1/files/$id")
   check "  viewer can read status of $id" "$([ "$read_status" = 200 ] && echo true || echo false)"
+  if [ "$status" = 202 ]; then
+    # Ingestion -> outbox -> SNS/SQS -> parser -> SNS/SQS -> ingestion status update.
+    final=$(wait_for_terminal_status "$id")
+    check "  parsed by the pipeline (status $final)" "$([ "$final" = Parsed ] && echo true || echo false)"
+  else
+    echo "  (duplicate of an earlier upload; pipeline check skipped)"
+  fi
 done
 
 forbidden=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $VIEWER" -F "file=@$ROOT/samples/hl7/adt-a01.hl7" "$API_URL/api/v1/files")

@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ingestion\CareFlow.Ingestion.Api\CareFlow.Ingestion.Api.csproj" />
+    <ProjectReference Include="..\..\src\Parser\CareFlow.Parser.Worker\CareFlow.Parser.Worker.csproj" />
   </ItemGroup>
 
   <ItemGroup>

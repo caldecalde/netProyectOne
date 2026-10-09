@@ -1,62 +1,71 @@
 using System.Reflection;
-using CareFlow.Ingestion.Application;
-using CareFlow.Ingestion.Domain;
-using CareFlow.Ingestion.Infrastructure;
 using NetArchTest.Rules;
 
 namespace CareFlow.Architecture.Tests;
 
-/// <summary>Enforces the Clean Architecture dependency rule: dependencies point inward only.</summary>
+/// <summary>Enforces the Clean Architecture dependency rule in every service: dependencies point inward only.</summary>
 public class LayeringTests
 {
-    private static readonly Assembly Domain = typeof(IngestionFile).Assembly;
-    private static readonly Assembly Application = typeof(IngestionOptions).Assembly;
-    private static readonly Assembly Infrastructure = typeof(AwsOptions).Assembly;
+    private static readonly string[] Drivers = ["MongoDB", "Amazon", "NHapi", "Microsoft.AspNetCore"];
 
-    [Fact]
-    public void Domain_HasNoDependencyOnOuterLayersOrFrameworks()
+    public static TheoryData<string> Services => ["Ingestion", "Parser"];
+
+    [Theory]
+    [MemberData(nameof(Services))]
+    public void Domain_HasNoDependencyOnOuterLayersOrFrameworks(string service)
     {
-        AssertNoDependencies(Domain,
-            "CareFlow.Ingestion.Application",
-            "CareFlow.Ingestion.Infrastructure",
-            "CareFlow.Ingestion.Api",
+        AssertNoDependencies(Layer(service, "Domain"),
+        [
+            $"CareFlow.{service}.Application",
+            $"CareFlow.{service}.Infrastructure",
             "CareFlow.BuildingBlocks",
-            "Microsoft.AspNetCore",
-            "MongoDB",
-            "Amazon");
+            .. Drivers,
+        ]);
     }
 
-    [Fact]
-    public void Application_DoesNotDependOnInfrastructureOrDrivers()
+    [Theory]
+    [MemberData(nameof(Services))]
+    public void Application_DoesNotDependOnInfrastructureOrDrivers(string service)
     {
-        AssertNoDependencies(Application,
-            "CareFlow.Ingestion.Infrastructure",
-            "CareFlow.Ingestion.Api",
-            "MongoDB",
-            "Amazon");
+        AssertNoDependencies(Layer(service, "Application"), [$"CareFlow.{service}.Infrastructure", "CareFlow.BuildingBlocks.Aws", .. Drivers]);
     }
 
-    [Fact]
-    public void Infrastructure_DoesNotDependOnApi()
+    [Theory]
+    [InlineData("Ingestion", "CareFlow.Ingestion.Api")]
+    [InlineData("Parser", "CareFlow.Parser.Worker")]
+    public void Infrastructure_DoesNotDependOnTheHost(string service, string host)
     {
-        AssertNoDependencies(Infrastructure, "CareFlow.Ingestion.Api");
+        AssertNoDependencies(Layer(service, "Infrastructure"), [host]);
     }
 
-    [Fact]
-    public void InfrastructureAdapters_AreNotPublic()
+    [Theory]
+    [MemberData(nameof(Services))]
+    public void InfrastructureAdapters_AreNotPublic(string service)
     {
-        var result = Types.InAssembly(Infrastructure)
-            .That().ResideInNamespaceMatching(@"CareFlow\.Ingestion\.Infrastructure\.(Storage|Messaging|Persistence)")
+        var result = Types.InAssembly(Layer(service, "Infrastructure"))
+            .That().ResideInNamespaceMatching($@"CareFlow\.{service}\.Infrastructure\.(Storage|Messaging|Persistence|Hl7|HealthChecks)")
             .Should().NotBePublic()
             .GetResult();
 
         Assert.True(result.IsSuccessful, Describe(result));
     }
 
-    private static void AssertNoDependencies(Assembly assembly, params string[] forbidden)
+    [Fact]
+    public void Services_DoNotReferenceEachOther()
+    {
+        foreach (var layer in new[] { "Domain", "Application", "Infrastructure" })
+        {
+            AssertNoDependencies(Layer("Ingestion", layer), ["CareFlow.Parser"]);
+            AssertNoDependencies(Layer("Parser", layer), ["CareFlow.Ingestion"]);
+        }
+    }
+
+    private static Assembly Layer(string service, string layer) => Assembly.Load($"CareFlow.{service}.{layer}");
+
+    private static void AssertNoDependencies(Assembly assembly, string[] forbidden)
     {
         var result = Types.InAssembly(assembly).ShouldNot().HaveDependencyOnAny(forbidden).GetResult();
-        Assert.True(result.IsSuccessful, Describe(result));
+        Assert.True(result.IsSuccessful, $"{assembly.GetName().Name}: {Describe(result)}");
     }
 
     private static string Describe(TestResult result) =>

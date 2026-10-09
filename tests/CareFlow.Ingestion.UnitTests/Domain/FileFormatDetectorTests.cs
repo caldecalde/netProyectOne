@@ -12,6 +12,8 @@ public class FileFormatDetectorTests
     [InlineData("MSH|^~\\&|SYNTHEA|CLINIC|", FileFormat.Hl7v2)]
     [InlineData("\r\n  MSH|^~\\&|SYNTHEA|CLINIC|", FileFormat.Hl7v2)]
     [InlineData("\u000bMSH|^~\\&|SYNTHEA|CLINIC|", FileFormat.Hl7v2)] // MLLP start block
+    [InlineData("FHS|^~\\&|SYNTHEA|CLINIC|", FileFormat.Hl7v2)] // batch file header
+    [InlineData("BHS|^~\\&|SYNTHEA|CLINIC|", FileFormat.Hl7v2)] // batch header
     [InlineData(Isa + "GS*HC~", FileFormat.X12)]
     [InlineData("ISA*00*too-short~", FileFormat.Unknown)]
     [InlineData("MSHX^~\\&|", FileFormat.Unknown)]

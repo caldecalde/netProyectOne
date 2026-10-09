@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\CareFlow.Parser.Domain\CareFlow.Parser.Domain.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\CareFlow.BuildingBlocks\CareFlow.BuildingBlocks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CareFlow.Parser.UnitTests" />
+  </ItemGroup>
+
+</Project>

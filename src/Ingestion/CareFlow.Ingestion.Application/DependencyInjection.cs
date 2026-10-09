@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<SubmitFileHandler>();
         services.AddScoped<GetFileHandler>();
+        services.AddScoped<ParseResultHandler>();
         return services;
     }
 }

@@ -40,13 +40,32 @@ $viewer = Get-Token 'viewer'
 $ready = Invoke-WebRequest -Uri "$ApiUrl/health/ready" -UseBasicParsing
 Check 'readiness probe' ($ready.StatusCode -eq 200)
 
-foreach ($sample in 'samples/hl7/adt-a01.hl7', 'samples/x12/837p-single-claim.x12') {
+function Wait-TerminalStatus([string]$Id) {
+    # Ingestion -> outbox -> SNS/SQS -> parser -> SNS/SQS -> ingestion status update.
+    for ($i = 0; $i -lt 30; $i++) {
+        $file = Invoke-RestMethod -Uri "$ApiUrl/api/v1/files/$Id" -Headers @{ Authorization = "Bearer $viewer" }
+        if ($file.status -ne 'Received') { return $file.status }
+        Start-Sleep -Seconds 1
+    }
+    'Received'
+}
+
+$samples = 'samples/hl7/adt-a01.hl7', 'samples/hl7/oru-r01.hl7', 'samples/hl7/adt-batch.hl7',
+    'samples/x12/837p-single-claim.x12', 'samples/x12/837p-batch-partial.x12'
+foreach ($sample in $samples) {
     $r = Invoke-Upload $submitter (Join-Path $root $sample)
     Check "upload $sample (202 new or 200 duplicate)" ($r.Status -in 200, 202) "got $($r.Status): $($r.Body)"
     if ($r.Status -in 200, 202) {
         $file = $r.Body | ConvertFrom-Json
         $status = Invoke-RestMethod -Uri "$ApiUrl/api/v1/files/$($file.id)" -Headers @{ Authorization = "Bearer $viewer" }
         Check "  viewer can read status of $($file.id) [$($status.format)/$($status.status)]" ($status.id -eq $file.id)
+        if ($r.Status -eq 202) {
+            $final = Wait-TerminalStatus $file.id
+            Check "  parsed by the pipeline (status $final)" ($final -eq 'Parsed')
+        }
+        else {
+            Write-Host '  (duplicate of an earlier upload; pipeline check skipped)'
+        }
         $again = Invoke-Upload $submitter (Join-Path $root $sample)
         Check '  re-upload is detected as duplicate (200, same id)' ($again.Status -eq 200 -and ($again.Body | ConvertFrom-Json).id -eq $file.id)
     }

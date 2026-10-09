@@ -7,6 +7,12 @@
   <ItemGroup Label="Data">
     <PackageVersion Include="MongoDB.Driver" Version="3.12.0" />
   </ItemGroup>
+  <ItemGroup Label="Healthcare standards">
+    <PackageVersion Include="nHapi.Model.V251" Version="3.2.4" />
+  </ItemGroup>
+  <ItemGroup Label="Resilience">
+    <PackageVersion Include="Polly.Core" Version="8.6.6" />
+  </ItemGroup>
   <ItemGroup Label="Web">
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.25" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.9.0" />

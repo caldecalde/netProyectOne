@@ -17,7 +17,6 @@ public class SubmitFileHandlerTests
 
     private readonly Mock<IRawFileStore> _store = new(MockBehavior.Strict);
     private readonly Mock<IIngestionFileRepository> _repository = new(MockBehavior.Strict);
-    private readonly Mock<IEventPublisher> _publisher = new(MockBehavior.Strict);
 
     public SubmitFileHandlerTests()
     {
@@ -25,7 +24,7 @@ public class SubmitFileHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_NewHl7File_StoresPersistsAndPublishes()
+    public async Task HandleAsync_NewHl7File_StoresContentAndCommitsRecordWithItsEventInTheOutbox()
     {
         byte[]? stored = null;
         _repository.Setup(r => r.FindBySha256Async(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((IngestionFile?)null);
@@ -38,12 +37,12 @@ public class SubmitFileHandlerTests
                 stored = copy.ToArray();
             })
             .Returns(Task.CompletedTask);
-        _repository.Setup(r => r.TryAddAsync(It.IsAny<IngestionFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        FileReceived? published = null;
-        _publisher
-            .Setup(p => p.PublishAsync(It.IsAny<FileReceived>(), It.IsAny<CancellationToken>()))
-            .Callback<FileReceived, CancellationToken>((e, _) => published = e)
-            .Returns(Task.CompletedTask);
+        IngestionFile? added = null;
+        IReadOnlyCollection<IntegrationEvent>? outbox = null;
+        _repository
+            .Setup(r => r.TryAddAsync(It.IsAny<IngestionFile>(), It.IsAny<IReadOnlyCollection<IntegrationEvent>>(), It.IsAny<CancellationToken>()))
+            .Callback<IngestionFile, IReadOnlyCollection<IntegrationEvent>, CancellationToken>((f, e, _) => (added, outbox) = (f, e))
+            .ReturnsAsync(true);
 
         var result = await CreateHandler().HandleAsync(Command(Hl7, "adt.hl7"), CancellationToken.None);
 
@@ -51,8 +50,10 @@ public class SubmitFileHandlerTests
         Assert.False(result.Value.IsDuplicate);
         Assert.Equal("Hl7v2", result.Value.File.Format);
         Assert.Equal(Encoding.UTF8.GetBytes(Hl7), stored);
+        Assert.Equal(result.Value.File.Id, added?.Id);
 
-        Assert.NotNull(published);
+        // The event is handed to the repository, to be committed in the same transaction as the record.
+        var published = Assert.IsType<FileReceived>(Assert.Single(outbox!));
         Assert.Equal(result.Value.File.Id, published.IngestionId);
         Assert.Equal("careflow-raw", published.Bucket);
         Assert.Equal(result.Value.File.Sha256, published.Sha256);
@@ -71,11 +72,11 @@ public class SubmitFileHandlerTests
         Assert.True(result.Value.IsDuplicate);
         Assert.Equal(existing.Id, result.Value.File.Id);
         _store.Verify(s => s.PutAsync(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<IReadOnlyDictionary<string, string>>(), It.IsAny<CancellationToken>()), Times.Never);
-        _publisher.VerifyNoOtherCalls();
+        _repository.Verify(r => r.TryAddAsync(It.IsAny<IngestionFile>(), It.IsAny<IReadOnlyCollection<IntegrationEvent>>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task HandleAsync_LosesInsertRace_ReturnsWinnerAndDoesNotPublish()
+    public async Task HandleAsync_LosesInsertRace_ReturnsWinner()
     {
         var winner = IngestionFile.Receive(Guid.NewGuid(), "adt.hl7", FileFormat.Hl7v2, 10, new string('c', 64), "user-2", Now);
         _repository.SetupSequence(r => r.FindBySha256Async(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -83,13 +84,15 @@ public class SubmitFileHandlerTests
             .ReturnsAsync(winner);
         _store.Setup(s => s.PutAsync(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<IReadOnlyDictionary<string, string>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _repository.Setup(r => r.TryAddAsync(It.IsAny<IngestionFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        // The repository rejected the insert, so nothing (neither record nor event) was committed for this upload.
+        _repository.Setup(r => r.TryAddAsync(It.IsAny<IngestionFile>(), It.IsAny<IReadOnlyCollection<IntegrationEvent>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
         var result = await CreateHandler().HandleAsync(Command(Hl7), CancellationToken.None);
 
         Assert.True(result.Value.IsDuplicate);
         Assert.Equal(winner.Id, result.Value.File.Id);
-        _publisher.VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -103,7 +106,6 @@ public class SubmitFileHandlerTests
         Assert.Equal(expectedCode, result.Error!.Code);
         _store.VerifyNoOtherCalls();
         _repository.VerifyNoOtherCalls();
-        _publisher.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -118,7 +120,6 @@ public class SubmitFileHandlerTests
     private SubmitFileHandler CreateHandler(long maxFileBytes = 1024 * 1024) => new(
         _store.Object,
         _repository.Object,
-        _publisher.Object,
         new FixedTimeProvider(Now),
         Options.Create(new IngestionOptions { MaxFileBytes = maxFileBytes }),
         NullLogger<SubmitFileHandler>.Instance);

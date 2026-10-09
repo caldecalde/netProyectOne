@@ -2,11 +2,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CareFlow.Ingestion.Application\CareFlow.Ingestion.Application.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\CareFlow.BuildingBlocks.Aws\CareFlow.BuildingBlocks.Aws.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" />
-    <PackageReference Include="AWSSDK.SimpleNotificationService" />
     <PackageReference Include="MongoDB.Driver" />
   </ItemGroup>
 

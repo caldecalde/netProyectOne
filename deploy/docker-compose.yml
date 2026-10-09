@@ -3,6 +3,13 @@
 # Credentials here are for local development only.
 name: careflow
 
+x-aws-local: &aws-local
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
+  Aws__ServiceUrl: http://localstack:4566
+  Aws__EventsTopicArn: arn:aws:sns:us-east-1:000000000000:careflow-events
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+
 services:
   localstack:
     image: localstack/localstack:4.9
@@ -19,17 +26,21 @@ services:
       timeout: 3s
       retries: 30
 
+  # Single-node replica set: the transactional outbox needs multi-document transactions, which standalone mongod lacks.
+  # Clients connect with directConnection=true, so the member name (localhost) never has to resolve from other hosts.
   mongo:
     image: mongo:8.0
+    command: ["--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      # Initiates the replica set on first run; healthy only once this node is a writable primary.
+      test: ["CMD", "mongosh", "--quiet", "--eval", "try { rs.status() } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] }) } if (!db.hello().isWritablePrimary) { quit(1) }"]
       interval: 5s
-      timeout: 3s
-      retries: 20
+      timeout: 5s
+      retries: 30
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.4
@@ -62,24 +73,42 @@ services:
       dockerfile: src/Ingestion/CareFlow.Ingestion.Api/Dockerfile
     image: careflow/ingestion-api:local
     environment:
+      <<: *aws-local
       ASPNETCORE_ENVIRONMENT: Production
       Swagger__Enabled: "true"
       Auth__Authority: http://localhost:8080/realms/careflow
       Auth__MetadataAddress: http://keycloak:8080/realms/careflow/.well-known/openid-configuration
       Auth__RequireHttpsMetadata: "false"
-      Aws__ServiceUrl: http://localstack:4566
       Aws__RawBucket: careflow-raw
-      Aws__EventsTopicArn: arn:aws:sns:us-east-1:000000000000:careflow-events
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
-      Mongo__ConnectionString: mongodb://mongo:27017
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      Mongo__ConnectionString: mongodb://mongo:27017/?directConnection=true
+      Consumers__ParseResults__QueueUrl: http://localstack:4566/000000000000/ingestion-parse-results
+      Consumers__ParseResults__DeadLetterQueueUrl: http://localstack:4566/000000000000/ingestion-parse-results-dlq
     ports:
       - "5080:8080"
     depends_on:
       localstack: { condition: service_healthy }
       mongo: { condition: service_healthy }
       keycloak: { condition: service_healthy }
+      jaeger: { condition: service_started }
+
+  parser-worker:
+    build:
+      context: ..
+      dockerfile: src/Parser/CareFlow.Parser.Worker/Dockerfile
+    image: careflow/parser-worker:local
+    environment:
+      <<: *aws-local
+      ASPNETCORE_ENVIRONMENT: Production
+      Aws__ResultsBucket: careflow-parsed
+      Parser__SourceBucket: careflow-raw
+      Mongo__ConnectionString: mongodb://mongo:27017/?directConnection=true
+      Consumers__FileReceived__QueueUrl: http://localstack:4566/000000000000/parser-file-received
+      Consumers__FileReceived__DeadLetterQueueUrl: http://localstack:4566/000000000000/parser-file-received-dlq
+    ports:
+      - "5081:8080" # health probes only
+    depends_on:
+      localstack: { condition: service_healthy }
+      mongo: { condition: service_healthy }
       jaeger: { condition: service_started }
 
 volumes:

@@ -22,6 +22,10 @@ public static class FileFormatDetector
 
     private static ReadOnlySpan<byte> Hl7Header => "MSH"u8;
 
+    private static ReadOnlySpan<byte> Hl7FileHeader => "FHS"u8;
+
+    private static ReadOnlySpan<byte> Hl7BatchHeader => "BHS"u8;
+
     private static ReadOnlySpan<byte> X12Header => "ISA"u8;
 
     /// <summary>
@@ -42,7 +46,8 @@ public static class FileFormatDetector
         }
 
         // MSH-1 (field separator) is the 4th character; the delimiters follow it, e.g. "MSH|^~\&|".
-        if (header.Length >= 8 && header.StartsWith(Hl7Header) && IsDelimiter(header[3]))
+        // Batch files open with a file (FHS) or batch (BHS) header that has the same layout.
+        if (header.Length >= 8 && (header.StartsWith(Hl7Header) || header.StartsWith(Hl7FileHeader) || header.StartsWith(Hl7BatchHeader)) && IsDelimiter(header[3]))
         {
             return FileFormat.Hl7v2;
         }

@@ -17,7 +17,6 @@ public sealed record SubmitFileCommand(string? FileName, Stream Content, string 
 public sealed class SubmitFileHandler(
     IRawFileStore fileStore,
     IIngestionFileRepository repository,
-    IEventPublisher publisher,
     TimeProvider timeProvider,
     IOptions<IngestionOptions> options,
     ILogger<SubmitFileHandler> logger)
@@ -81,7 +80,20 @@ public sealed class SubmitFileHandler(
             },
             cancellationToken);
 
-        if (!await repository.TryAddAsync(file, cancellationToken))
+        var fileReceived = new FileReceived
+        {
+            OccurredAt = file.ReceivedAt,
+            IngestionId = file.Id,
+            Format = format.ToString(),
+            Bucket = fileStore.Location,
+            StorageKey = file.StorageKey,
+            Sha256 = sha256,
+            SizeBytes = file.SizeBytes,
+        };
+
+        // The record and its event commit together (transactional outbox), so a broker outage cannot leave a stored
+        // file without its event. The relay publishes it right after the commit, or later if the broker is down.
+        if (!await repository.TryAddAsync(file, [fileReceived], cancellationToken))
         {
             // Lost a race with a concurrent identical upload; the winner owns the event.
             // The object we just wrote is orphaned under a unique key and is removed by the bucket lifecycle rule.
@@ -89,20 +101,6 @@ public sealed class SubmitFileHandler(
                 ?? throw new InvalidOperationException($"Duplicate key reported for {sha256} but no record found.");
             return new SubmitFileResult(IngestionFileDto.From(winner), IsDuplicate: true);
         }
-
-        // TODO(week 2): replace with a transactional outbox so a broker outage can't leave a stored file without its event.
-        await publisher.PublishAsync(
-            new FileReceived
-            {
-                OccurredAt = file.ReceivedAt,
-                IngestionId = file.Id,
-                Format = format.ToString(),
-                Bucket = fileStore.Location,
-                StorageKey = file.StorageKey,
-                Sha256 = sha256,
-                SizeBytes = file.SizeBytes,
-            },
-            cancellationToken);
 
         CareFlowTelemetry.FilesReceived.Add(1, new KeyValuePair<string, object?>("format", format.ToString()));
         CareFlowTelemetry.FileSize.Record(file.SizeBytes, new KeyValuePair<string, object?>("format", format.ToString()));
